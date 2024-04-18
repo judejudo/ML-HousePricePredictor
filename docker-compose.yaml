@@ -1,0 +1,38 @@
+services:
+  # Flask server
+  flask_server:
+    image: flask-server-image
+    build: 
+        context: ./server
+        dockerfile: Dockerfile
+    container_name: flask-c
+    ports:
+      - "5000:5000"
+    restart: on-failure
+    
+   # Nginx server 
+  nginx: 
+    image: nginx:1.25.4
+    container_name: nginx-c
+    restart: always
+    depends_on:
+      - flask_server
+      - frontend_server
+    volumes:
+      - ./reverse_proxy/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    
+  # Frontend server
+  frontend_server:
+    image: frontend
+    container_name: frontend-container
+    depends_on:
+      - flask_server
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "8090:80"
+    restart: on-failure
+
